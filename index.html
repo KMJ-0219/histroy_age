@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국독립운동 중점도</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            touch-action: pan-x pan-y;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #d4af37;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #d4af37;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            margin: 0;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .card-size-control {
+            display: flex;
+            align-items: center;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .card-size-control input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .card-size-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #d4af37;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .card-size-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #d4af37;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #d4af37;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #d4af37, #ffd700);
+            border: none;
+            color: #1a1a2e;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #ffd700, #d4af37);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333, #dc3545);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        .timeline {
+            position: fixed;
+            left: 20px;
+            top: 80px;
+            bottom: 20px;
+            width: 80px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px 10px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .year-marker {
+            color: #d4af37;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px 0;
+            border-left: 3px solid #d4af37;
+            padding-left: 12px;
+            position: relative;
+            margin: 10px 0;
+        }
+        
+        .year-marker::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #d4af37;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.7);
+        }
+        
+        .focus-container {
+            position: absolute;
+            top: 80px;
+            left: 120px;
+            right: 20px;
+            bottom: 20px;
+            overflow: auto;
+        }
+        
+        .focus-card {
+            position: absolute;
+            width: 190px;
+            min-height: 100px;
+            background: linear-gradient(135deg, #2c5530 0%, #1e3a1e 100%);
+            border: 2px solid #4a7c59;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            user-select: none;
+        }
+        
+        .focus-card:hover {
+            transform: scale(1.08);
+            border-color: #d4af37;
+            box-shadow: 0 8px 35px rgba(212, 175, 55, 0.4);
+            z-index: 80;
+        }
+        
+        .focus-card.selected {
+            background: linear-gradient(135deg, #8b4513 0%, #654321 100%);
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            z-index: 90;
+            transform: scale(1.05);
+        }
+        
+        .focus-card.high-connection {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .card-controls {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .focus-card:hover .card-controls {
+            opacity: 1;
+        }
+        
+        .card-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .edit-btn {
+            background: #28a745;
+        }
+        
+        .edit-btn:hover {
+            background: #218838;
+            transform: scale(1.1);
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .mobile-menu {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 1100;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 180px;
+        }
+        
+        .mobile-menu.active {
+            display: flex;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 10px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #d4af37;
+        }
+        
+        .modal-title {
+            color: #d4af37;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #d4af37;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #4a7c59;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .status-message.show {
+            transform: translateX(0);
+        }
+        
+        .status-success {
+            background: #28a745;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .status-info {
+            background: #17a2b8;
+        }
+        
+        .card-title {
+            font-weight: bold;
+            font-size: 13px;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .card-year {
+            font-size: 11px;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        .card-type {
+            font-size: 9px;
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .connection-line {
+            position: absolute;
+            z-index: 50;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .evolution-line {
+            background: linear-gradient(90deg, #d4af37, #ffd700);
+            height: 4px;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+            border-radius: 2px;
+        }
+        
+        .details-panel {
+            position: fixed;
+            right: -400px;
+            top: 80px;
+            width: 380px;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #d4af37;
+            padding: 20px;
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .details-panel.open {
+            right: 20px;
+        }
+        
+        .close-details {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #d4af37;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .detail-section {
+            margin-bottom: 15px;
+        }
+        
+        .detail-title {
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #d4af37;
+            padding-bottom: 3px;
+        }
+        
+        .detail-content {
+            color: #ffffff;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #d4af37;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 120px;
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff6b6b;
+            font-size: 16px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ff6b6b;
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #d4af37;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+
+        /* 태블릿용 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .timeline {
+                width: 50px;
+                left: 8px;
+            }
+            
+            .focus-container {
+                left: 65px;
+                right: 8px;
+            }
+            
+            .focus-card {
+                width: 140px;
+                min-height: 80px;
+                padding: 10px;
+            }
+            
+            .card-title {
+                font-size: 11px;
+            }
+            
+            .card-year {
+                font-size: 9px;
+            }
+            
+            .card-type {
+                font-size: 8px;
+            }
+            
+            .details-panel {
+                width: 280px;
+            }
+            
+            .legend {
+                left: 65px;
+                gap: 8px;
+                padding: 6px 12px;
+            }
+            
+            .legend-item {
+                font-size: 10px;
+            }
+        }
+
+        /* 모바일용 반응형 디자인 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 8px 15px;
+                flex-wrap: wrap;
+            }
+            
+            .header h1 {
+                font-size: 16px;
+                flex: 1;
+            }
+            
+            .header-controls {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .card-size-control {
+                display: none;
+            }
+            
+            .timeline {
+                width: 40px;
+                left: 5px;
+                padding: 10px 3px;
+            }
+            
+            .year-marker {
+                font-size: 9px;
+                padding: 4px 0;
+                padding-left: 6px;
+            }
+            
+            .year-marker::before {
+                width: 6px;
+                height: 6px;
+                left: -3px;
+            }
+            
+            .focus-container {
+                left: 50px;
+                right: 5px;
+                top: 70px;
+            }
+            
+            .focus-card:hover {
+                transform: scale(1.03);
+            }
+            
+            .card-controls {
+                top: -6px;
+                right: -6px;
+                opacity: 1;
+            }
+            
+            .card-btn {
+                width: 18px;
+                height: 18px;
+                font-size: 9px;
+            }
+            
+            .details-panel {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: auto;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+                border: none;
+                border-top: 2px solid #d4af37;
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .details-panel.open {
+                transform: translateY(0);
+                right: 0;
+            }
+            
+            .close-details {
+                top: 15px;
+                right: 15px;
+                font-size: 24px;
+            }
+            
+            .legend {
+                left: 50px;
+                bottom: 8px;
+                gap: 6px;
+                padding: 4px 8px;
+                flex-wrap: wrap;
+                max-width: calc(100% - 60px);
+            }
+            
+            .legend-item {
+                font-size: 9px;
+            }
+            
+            .legend-color {
+                width: 10px;
+                height: 10px;
+            }
+            
+            .modal-content {
+                padding: 16px;
+                margin: 5px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .modal-actions {
+                flex-direction: column-reverse;
+                gap: 8px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .status-message {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                transform: translateY(-100px);
+                padding: 10px 16px;
+                text-align: center;
+            }
+            
+            .status-message.show {
+                transform: translateY(0);
+            }
+        }
+
+        /* 아주 작은 화면 (480px 이하) */
+        @media (max-width: 480px) {
+            .focus-card {
+                width: 95px;
+                min-height: 60px;
+                padding: 6px;
+            }
+            
+            .card-title {
+                font-size: 9px;
+                margin-bottom: 3px;
+            }
+            
+            .card-year {
+                font-size: 7px;
+                margin-bottom: 2px;
+            }
+            
+            .card-type {
+                font-size: 6px;
+                padding: 1px 2px;
+            }
+            
+            .timeline {
+                width: 35px;
+            }
+            
+            .focus-container {
+                left: 42px;
+            }
+            
+            .legend {
+                left: 42px;
+                padding: 3px 6px;
+            }
+        }
+
+        /* 매우 작은 화면 (360px 이하) */
+        @media (max-width: 360px) {
+            .focus-card {
+                width: 85px;
+                min-height: 55px;
+                padding: 5px;
+            }
+            
+            .card-title {
+                font-size: 8px;
+                margin-bottom: 2px;
+            }
+            
+            .card-year {
+                font-size: 6px;
+                margin-bottom: 1px;
+            }
+            
+            .card-type {
+                font-size: 5px;
+                padding: 1px;
+            }
+            
+            .timeline {
+                width: 30px;
+            }
+            
+            .focus-container {
+                left: 35px;
+            }
+            
+            .legend {
+                left: 35px;
+                padding: 2px 4px;
+                font-size: 8px;
+            }
+        }
+
+        /* 터치 디바이스에서의 호버 효과 개선 */
+        @media (hover: none) {
+            .focus-card:hover {
+                transform: none;
+                border-color: #4a7c59;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            }
+            
+            .card-controls {
+                opacity: 1;
+            }
+            
+            .btn:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+
+        /* 가로 모드 모바일 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .header {
+                padding: 5px 10px;
+            }
+            
+            .header h1 {
+                font-size: 14px;
+            }
+            
+            .timeline {
+                top: 50px;
+                width: 45px;
+            }
+            
+            .focus-container {
+                top: 50px;
+                left: 50px;
+            }
+            
+            .legend {
+                left: 50px;
+                bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🇰🇷 한국독립운동 중점도 🇰🇷</h1>
+        <div class="header-controls">
+            <div class="card-size-control">
+                <label for="cardSizeSlider" style="color: #d4af37; font-size: 12px; margin-right: 8px;">카드 크기:</label>
+                <input type="range" id="cardSizeSlider" min="50" max="150" value="100" 
+                       style="width: 80px; margin-right: 8px;" onchange="updateCardSize(this.value)">
+                <span id="cardSizeValue" style="color: #d4af37; font-size: 12px; min-width: 30px;">100%</span>
+            </div>
+            <button class="btn" onclick="openAddModal()">+ 단체 추가</button>
+            <button class="btn" onclick="toggleEditMode()" id="editToggle">편집 모드</button>
+            <button class="btn" onclick="refreshData()">🔄 새로고침</button>
+        </div>
+        <button class="menu-toggle" onclick="toggleMobileMenu()" id="menuToggle">☰</button>
+    </div>
+    
+    <div class="mobile-menu" id="mobileMenu">
+        <button class="btn" onclick="openAddModal(); closeMobileMenu()">+ 단체 추가</button>
+        <button class="btn" onclick="toggleEditMode(); closeMobileMenu()" id="mobileEditToggle">편집 모드</button>
+        <button class="btn" onclick="refreshData(); closeMobileMenu()">🔄 새로고침</button>
+    </div>
+    
+    <div class="timeline" id="timeline">
+        <!-- 연도 마커들이 동적으로 추가됩니다 -->
+    </div>
+    
+    <div class="focus-container" id="focusContainer">
+        <!-- 중점 카드들이 동적으로 추가됩니다 -->
+    </div>
+    
+    <div class="details-panel" id="detailsPanel">
+        <button class="close-details" onclick="closeDetails()">×</button>
+        <div id="detailsContent"></div>
+    </div>
+    
+    <div class="legend" id="legend">
+        <!-- 범례가 동적으로 추가됩니다 -->
+    </div>
+    
+    <!-- 추가/편집 모달 -->
+    <div class="modal" id="orgModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">단체 추가</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="orgForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">단체명 *</label>
+                        <input type="text" class="form-input" id="단체이름" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">계열</label>
+                        <input type="text" class="form-input" id="계열" placeholder="예: 무장투쟁, 문화계몽, 외교독립">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">생성연도</label>
+                        <input type="number" class="form-input" id="생성연도" min="1800" max="1945">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">해체연도</label>
+                        <input type="number" class="form-input" id="해체연도" min="1800" max="1950">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">활동지역</label>
+                        <input type="text" class="form-input" id="활동지역" placeholder="예: 국내, 중국, 러시아">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">활동시대</label>
+                        <input type="text" class="form-input" id="활동시대" placeholder="예: 일제강점기 전기">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">대표인물</label>
+                    <input type="text" class="form-input" id="대표" placeholder="여러 명은 쉼표로 구분">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">이전단체</label>
+                    <input type="text" class="form-input" id="이전단체" placeholder="이 단체의 전신 (여러 개는 쉼표로 구분)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">이후단체</label>
+                    <input type="text" class="form-input" id="이후단체" placeholder="이 단체의 후신 (여러 개는 쉼표로 구분)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">연관단체</label>
+                    <input type="text" class="form-input" id="연관단체" placeholder="협력/경쟁 단체 (여러 개는 쉼표로 구분)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">연관사건</label>
+                    <input type="text" class="form-input" id="연관사건" placeholder="관련 독립운동 사건 (여러 개는 쉼표로 구분)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">설명</label>
+                    <textarea class="form-input form-textarea" id="설명" placeholder="단체에 대한 상세 설명"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">내부 정보</label>
+                    <textarea class="form-input form-textarea" id="내부" placeholder="추가 내부 정보 또는 메모"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeModal()">취소</button>
+                    <button type="submit" class="btn" id="saveBtn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 상태 메시지 -->
+    <div class="status-message" id="statusMessage"></div>
+    
+    <div class="loading" id="loading">데이터 로딩 중...</div>
+    
+    <script>
+        // Supabase 설정
+        const supabaseUrl = 'https://mtwgvllppxdfkfwkevhn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10d2d2bGxwcHhkZmtmd2tldmhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MTc2NjgsImV4cCI6MjA3Mzk5MzY2OH0.CmzXI9dMLAaL0VNt7IKEUrRyfSksS3WXlBs3cGsw6cU';
+        
+        // 전역 변수
+        let organizations = [];
+        let focusCards = new Map();
+        let minYear = 1900;
+        let maxYear = 1945;
+        let isEditMode = false;
+        let currentEditingId = null;
+        let isMobileMenuOpen = false;
+        let cardSizeScale = 1.0; // 카드 크기 스케일 (100% = 1.0)
+        
+        // 카드 크기 제어 함수들
+        function updateCardSize(value) {
+            cardSizeScale = value / 100; // 50-150% -> 0.5-1.5
+            
+            // 양쪽 슬라이더 동기화
+            document.getElementById('cardSizeSlider').value = value;
+            document.getElementById('mobileCardSizeSlider').value = value;
+            document.getElementById('cardSizeValue').textContent = value + '%';
+            document.getElementById('mobileCardSizeValue').textContent = value + '%';
+            
+            // 카드들을 다시 생성
+            if (organizations.length > 0) {
+                createFocusCards();
+                createConnections();
+                showStatus(`카드 크기가 ${value}%로 조정되었습니다.`, 'info');
+            }
+        }
+        
+        function getScaledCardSize() {
+            // 기본 카드 크기 (데스크톱 기준)
+            let baseWidth = 190;
+            let baseHeight = 100;
+            
+            // 화면 크기에 따른 조정
+            if (window.innerWidth <= 360) {
+                baseWidth = 85;
+                baseHeight = 55;
+            } else if (window.innerWidth <= 480) {
+                baseWidth = 95;
+                baseHeight = 60;
+            } else if (window.innerWidth <= 768) {
+                baseWidth = 110;
+                baseHeight = 70;
+            } else if (window.innerWidth <= 1024) {
+                baseWidth = 140;
+                baseHeight = 80;
+            }
+            
+            // 사용자 설정 스케일 적용
+            return {
+                width: Math.round(baseWidth * cardSizeScale),
+                height: Math.round(baseHeight * cardSizeScale)
+            };
+        }
+        
+        // 모바일 메뉴 관리
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('menuToggle');
+            
+            isMobileMenuOpen = !isMobileMenuOpen;
+            
+            if (isMobileMenuOpen) {
+                menu.classList.add('active');
+                toggle.textContent = '✕';
+            } else {
+                menu.classList.remove('active');
+                toggle.textContent = '☰';
+            }
+        }
+        
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('menuToggle');
+            
+            isMobileMenuOpen = false;
+            menu.classList.remove('active');
+            toggle.textContent = '☰';
+        }
+        
+        // 모바일에서 외부 클릭 시 메뉴 닫기
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('mobileMenu');
+            const toggle = document.getElementById('menuToggle');
+            
+            if (isMobileMenuOpen && !menu.contains(e.target) && !toggle.contains(e.target)) {
+                closeMobileMenu();
+            }
+        });
+        
+        // 유틸리티 함수들
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+        
+        function isTablet() {
+            return window.innerWidth <= 1024 && window.innerWidth > 768;
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.classList.add('show');
+            
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        function getTypeColor(type) {
+            if (!type) return 'linear-gradient(135deg, #404040 0%, #202020 100%)';
+            
+            const typeColors = {
+                '무장투쟁': 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                '문화계몽': 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                '외교독립': 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
+                '임시정부': 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
+                '종교운동': 'linear-gradient(135deg, #6f42c1 0%, #59359a 100%)',
+                '학생운동': 'linear-gradient(135deg, #fd7e14 0%, #e8650e 100%)',
+                '농민운동': 'linear-gradient(135deg, #20c997 0%, #1aa179 100%)',
+                '언론출판': 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)'
+            };
+            
+            if (typeColors[type]) {
+                return typeColors[type];
+            }
+            
+            // 기본 색상 생성 로직
+            let hash = 0;
+            for (let i = 0; i < type.length; i++) {
+                hash = type.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            const hue = Math.abs(hash) % 360;
+            const lightColor = `hsl(${hue}, 60%, 45%)`;
+            const darkColor = `hsl(${hue}, 60%, 25%)`;
+            
+            return `linear-gradient(135deg, ${lightColor} 0%, ${darkColor} 100%)`;
+        }
+        
+        function yearToY(year) {
+            if (!year || maxYear === minYear) return 100;
+            const yearRange = maxYear - minYear;
+            const containerHeight = window.innerHeight - (isMobile() ? 140 : 180);
+            return ((year - minYear) / yearRange) * (containerHeight - 200) + 50;
+        }
+        
+        // 데이터베이스 연동 함수들
+        async function loadData() {
+            try {
+                console.log('데이터 로딩 시작...');
+                
+                const response = await fetch(`${supabaseUrl}/rest/v1/independence_orgs?select=*&order=id.asc`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('응답 오류:', errorText);
+                    throw new Error(`HTTP 오류: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                organizations = Array.isArray(data) ? data : [];
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (organizations.length > 0) {
+                    updateYearRange();
+                    createTimeline();
+                    createFocusCards();
+                    createConnections();
+                    updateLegend();
+                    console.log(`${organizations.length}개의 독립운동 단체 데이터를 로드했습니다.`);
+                } else {
+                    showEmptyState();
+                }
+                
+            } catch (error) {
+                console.error('데이터 로드 오류:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="error-message">
+                        <h3>데이터 로드 실패</h3>
+                        <p>오류: ${error.message}</p>
+                        <p>Supabase 연결을 확인해주세요.</p>
+                        <button class="btn" onclick="refreshData()" style="margin-top: 10px;">다시 시도</button>
+                    </div>
+                `;
+            }
+        }
+        
+        async function saveOrganization(formData) {
+            try {
+                showStatus('저장 중...', 'info');
+                console.log('저장할 데이터:', formData);
+                
+                let response;
+                
+                if (currentEditingId) {
+                    // 수정 - 한국어 필드명 그대로 사용
+                    const updateData = {};
+                    Object.keys(formData).forEach(key => {
+                        if (formData[key] !== null && formData[key] !== '') {
+                            updateData[key] = formData[key];
+                        }
+                    });
+                    
+                    response = await fetch(`${supabaseUrl}/rest/v1/independence_orgs?id=eq.${currentEditingId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': supabaseKey,
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                } else {
+                    // 추가 - 한국어 필드명 그대로 사용
+                    const insertData = {};
+                    Object.keys(formData).forEach(key => {
+                        if (formData[key] !== null && formData[key] !== '') {
+                            insertData[key] = formData[key];
+                        }
+                    });
+                    
+                    console.log('삽입할 데이터:', insertData);
+                    
+                    response = await fetch(`${supabaseUrl}/rest/v1/independence_orgs`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': supabaseKey,
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify(insertData)
+                    });
+                }
+                
+                console.log('응답 상태:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('저장 오류 응답:', errorText);
+                    throw new Error(`HTTP 오류: ${response.status} - ${errorText}`);
+                }
+                
+                showStatus(currentEditingId ? '수정이 완료되었습니다!' : '추가가 완료되었습니다!', 'success');
+                closeModal();
+                
+                // 데이터 새로고침
+                setTimeout(() => {
+                    refreshData();
+                }, 500);
+                
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showStatus(`저장 중 오류가 발생했습니다: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deleteOrganization(orgId) {
+            const org = organizations.find(o => o.id === orgId);
+            const orgName = org ? org.단체이름 : '선택된 단체';
+            
+            if (!confirm(`정말로 "${orgName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+            
+            try {
+                showStatus('삭제 중...', 'info');
+                
+                const response = await fetch(`${supabaseUrl}/rest/v1/independence_orgs?id=eq.${orgId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP 오류: ${response.status} - ${errorText}`);
+                }
+                
+                showStatus(`"${orgName}"이(가) 삭제되었습니다!`, 'success');
+                await refreshData();
+                
+                // 상세 패널이 열려있다면 닫기
+                const detailsPanel = document.getElementById('detailsPanel');
+                if (detailsPanel.classList.contains('open')) {
+                    closeDetails();
+                }
+                
+            } catch (error) {
+                console.error('삭제 오류:', error);
+                showStatus(`삭제 중 오류가 발생했습니다: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshData() {
+            showStatus('데이터를 새로고침하는 중...', 'info');
+            await loadData();
+        }
+        
+        // UI 관련 함수들
+        function updateYearRange() {
+            if (organizations.length === 0) {
+                minYear = 1900;
+                maxYear = 1945;
+                return;
+            }
+            
+            const years = [];
+            organizations.forEach(org => {
+                if (org.생성연도 && org.생성연도 > 0) years.push(org.생성연도);
+                if (org.해체연도 && org.해체연도 > 0) years.push(org.해체연도);
+            });
+            
+            if (years.length > 0) {
+                minYear = Math.min(...years);
+                maxYear = Math.max(...years);
+            }
+        }
+        
+        function showEmptyState() {
+            const container = document.getElementById('focusContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>데이터가 없습니다</h3>
+                    <p>단체 추가 버튼을 클릭하여 첫 번째 독립운동 단체를 등록해보세요.</p>
+                </div>
+            `;
+        }
+        
+        function createTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            
+            if (organizations.length === 0) return;
+            
+            const yearRange = maxYear - minYear;
+            let interval = 1;
+            if (yearRange > 50) interval = 10;
+            else if (yearRange > 25) interval = 5;
+            else if (yearRange > 10) interval = 2;
+            
+            for (let year = minYear; year <= maxYear; year += interval) {
+                const marker = document.createElement('div');
+                marker.className = 'year-marker';
+                marker.textContent = year + '년';
+                
+                const containerHeight = window.innerHeight - (isMobile() ? 140 : 180);
+                const relativeY = ((year - minYear) / yearRange) * (containerHeight - 100);
+                marker.style.position = 'absolute';
+                marker.style.top = relativeY + 'px';
+                marker.style.left = '0';
+                marker.style.right = '0';
+                
+                timeline.appendChild(marker);
+            }
+        }
+        
+        function createFocusCards() {
+            const container = document.getElementById('focusContainer');
+            container.innerHTML = '';
+            focusCards.clear();
+            
+            if (organizations.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            const positions = calculateOptimalPositions();
+            
+            positions.forEach((pos, index) => {
+                const org = pos.org;
+                const card = document.createElement('div');
+                card.className = 'focus-card';
+                card.id = `card-${org.id}`;
+                
+                card.style.left = pos.x + 'px';
+                card.style.top = pos.y + 'px';
+                card.style.background = getTypeColor(org.계열);
+                
+                const displayYear = org.생성연도 || '미상';
+                const endYear = org.해체연도 ? ` - ${org.해체연도}` : '';
+                const displayName = org.단체이름 || '단체명 미상';
+                const displayType = org.계열 || '계열 미상';
+                
+                // CRUD 버튼 추가
+                let cardControls = '';
+                if (isEditMode) {
+                    cardControls = `
+                        <div class="card-controls">
+                            <button class="card-btn edit-btn" onclick="openEditModal(${org.id})" title="편집">✏</button>
+                            <button class="card-btn delete-btn" onclick="deleteOrganization(${org.id})" title="삭제">✗</button>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    ${cardControls}
+                    <div class="card-year">${displayYear}${endYear}년</div>
+                    <div class="card-title">${displayName}</div>
+                    <div class="card-type">${displayType}</div>
+                `;
+                
+                // 이벤트 리스너 추가 - 터치 디바이스 고려
+                if (isEditMode) {
+                    card.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('card-btn')) {
+                            openEditModal(org.id);
+                        }
+                    });
+                } else {
+                    card.addEventListener('click', () => showDetails(org));
+                }
+                
+                // 터치 디바이스가 아닌 경우에만 호버 효과 적용
+                if (window.matchMedia('(hover: hover)').matches) {
+                    card.addEventListener('mouseenter', () => highlightConnections(org.id));
+                    card.addEventListener('mouseleave', () => clearHighlights());
+                }
+                
+                container.appendChild(card);
+                focusCards.set(org.id, { element: card, data: org, position: pos });
+            });
+        }
+        
+        function calculateOptimalPositions() {
+            if (organizations.length === 0) return [];
+            
+            const scaledCardSize = getScaledCardSize();
+            const cardWidth = scaledCardSize.width;
+            const cardHeight = scaledCardSize.height;
+            
+            let containerWidth, minSpacing;
+            
+            if (window.innerWidth <= 360) {
+                containerWidth = window.innerWidth - 40;
+                minSpacing = Math.max(8, Math.round(10 * cardSizeScale));
+            } else if (window.innerWidth <= 480) {
+                containerWidth = window.innerWidth - 50;
+                minSpacing = Math.max(10, Math.round(12 * cardSizeScale));
+            } else if (window.innerWidth <= 768) {
+                containerWidth = window.innerWidth - 60;
+                minSpacing = Math.max(12, Math.round(15 * cardSizeScale));
+            } else if (window.innerWidth <= 1024) {
+                containerWidth = window.innerWidth - 80;
+                minSpacing = Math.max(15, Math.round(18 * cardSizeScale));
+            } else {
+                containerWidth = window.innerWidth - 180;
+                minSpacing = Math.max(18, Math.round(20 * cardSizeScale));
+            }
+            
+            const containerHeight = window.innerHeight - (isMobile() ? 140 : 180);
+            const availableWidth = containerWidth - cardWidth - 40;
+            const availableHeight = containerHeight - 100;
+            
+            // 그리드 기반 초기 배치
+            const cols = Math.max(2, Math.floor(availableWidth / (cardWidth + minSpacing)));
+            const rows = Math.max(2, Math.floor(availableHeight / (cardHeight + minSpacing)));
+            
+            // 연도별로 정렬
+            const sortedOrgs = [...organizations].sort((a, b) => {
+                const yearA = a.생성연도 || minYear;
+                const yearB = b.생성연도 || minYear;
+                return yearA - yearB;
+            });
+            
+            // 기본 위치 정보 초기화 - 그리드 기반
+            const positions = sortedOrgs.map((org, index) => {
+                const col = index % cols;
+                const yearBasedY = yearToY(org.생성연도 || minYear);
+                
+                // 연도 기반 Y 위치에 약간의 랜덤 오프셋 추가
+                const randomOffsetY = (Math.random() - 0.5) * 60;
+                const baseY = Math.max(20, Math.min(availableHeight - cardHeight, yearBasedY + randomOffsetY));
+                
+                return {
+                    id: org.id,
+                    x: 20 + col * (cardWidth + minSpacing) + (Math.random() - 0.5) * 40,
+                    y: baseY,
+                    originalY: yearBasedY,
+                    org: org,
+                    connections: [],
+                    width: cardWidth,
+                    height: cardHeight
+                };
+            });
+            
+            // 고급 겹침 방지 알고리즘
+            for (let iteration = 0; iteration < 100; iteration++) {
+                let hasOverlap = false;
+                let maxOverlapDistance = 0;
+                
+                for (let i = 0; i < positions.length; i++) {
+                    for (let j = i + 1; j < positions.length; j++) {
+                        const pos1 = positions[i];
+                        const pos2 = positions[j];
+                        
+                        const xDiff = Math.abs(pos1.x - pos2.x);
+                        const yDiff = Math.abs(pos1.y - pos2.y);
+                        
+                        const requiredXSpace = cardWidth + minSpacing;
+                        const requiredYSpace = cardHeight + minSpacing;
+                        
+                        if (xDiff < requiredXSpace && yDiff < requiredYSpace) {
+                            hasOverlap = true;
+                            const overlapDistance = Math.sqrt(
+                                Math.pow(requiredXSpace - xDiff, 2) + 
+                                Math.pow(requiredYSpace - yDiff, 2)
+                            );
+                            maxOverlapDistance = Math.max(maxOverlapDistance, overlapDistance);
+                            
+                            // 겹침 해결 - 더 정교한 방법
+                            const pushForce = Math.min(20, overlapDistance / 2);
+                            
+                            // X축 분리
+                            if (xDiff < requiredXSpace) {
+                                if (pos1.x < pos2.x) {
+                                    pos1.x = Math.max(20, pos1.x - pushForce);
+                                    pos2.x = Math.min(availableWidth - cardWidth, pos2.x + pushForce);
+                                } else {
+                                    pos1.x = Math.min(availableWidth - cardWidth, pos1.x + pushForce);
+                                    pos2.x = Math.max(20, pos2.x - pushForce);
+                                }
+                            }
+                            
+                            // Y축 분리 (연도를 고려한 제한적 이동)
+                            if (yDiff < requiredYSpace) {
+                                const yearDiff = Math.abs((pos1.org.생성연도 || minYear) - (pos2.org.생성연도 || minYear));
+                                const maxYMove = Math.min(pushForce, yearDiff > 5 ? 30 : 15);
+                                
+                                if (pos1.y < pos2.y) {
+                                    pos1.y = Math.max(20, pos1.y - maxYMove);
+                                    pos2.y = Math.min(availableHeight - cardHeight, pos2.y + maxYMove);
+                                } else {
+                                    pos1.y = Math.min(availableHeight - cardHeight, pos1.y + maxYMove);
+                                    pos2.y = Math.max(20, pos2.y - maxYMove);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 수렴 조건: 겹침이 없거나 개선이 미미할 때
+                if (!hasOverlap || maxOverlapDistance < 5) {
+                    break;
+                }
+            }
+            
+            // 경계 내 위치 보정
+            positions.forEach(pos => {
+                pos.x = Math.max(20, Math.min(availableWidth - cardWidth + 20, pos.x));
+                pos.y = Math.max(20, Math.min(availableHeight - cardHeight + 20, pos.y));
+            });
+            
+            // 최종 검증 및 강제 분리
+            for (let i = 0; i < positions.length; i++) {
+                for (let j = i + 1; j < positions.length; j++) {
+                    const pos1 = positions[i];
+                    const pos2 = positions[j];
+                    
+                    const xDiff = Math.abs(pos1.x - pos2.x);
+                    const yDiff = Math.abs(pos1.y - pos2.y);
+                    
+                    if (xDiff < cardWidth + minSpacing && yDiff < cardHeight + minSpacing) {
+                        // 강제 수직 배치
+                        if (pos1.y + cardHeight + minSpacing < availableHeight) {
+                            pos2.y = pos1.y + cardHeight + minSpacing;
+                        } else if (pos2.y - cardHeight - minSpacing > 20) {
+                            pos1.y = pos2.y - cardHeight - minSpacing;
+                        } else {
+                            // 수평 이동
+                            const availableX = availableWidth - cardWidth;
+                            pos2.x = Math.min(availableX, pos1.x + cardWidth + minSpacing);
+                            if (pos2.x > availableX) {
+                                pos1.x = Math.max(20, pos2.x - cardWidth - minSpacing);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return positions;
+        }            }
+                            
+                            // Y축 분리 (연도를 고려한 제한적 이동)
+                            if (yDiff < requiredYSpace) {
+                                const yearDiff = Math.abs((pos1.org.생성연도 || minYear) - (pos2.org.생성연도 || minYear));
+                                const maxYMove = Math.min(pushForce, yearDiff > 5 ? 30 : 15);
+                                
+                                if (pos1.y < pos2.y) {
+                                    pos1.y = Math.max(20, pos1.y - maxYMove);
+                                    pos2.y = Math.min(availableHeight - cardHeight, pos2.y + maxYMove);
+                                } else {
+                                    pos1.y = Math.min(availableHeight - cardHeight, pos1.y + maxYMove);
+                                    pos2.y = Math.max(20, pos2.y - maxYMove);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 수렴 조건: 겹침이 없거나 개선이 미미할 때
+                if (!hasOverlap || maxOverlapDistance < 5) {
+                    break;
+                }
+            }
+            
+            // 경계 내 위치 보정
+            positions.forEach(pos => {
+                pos.x = Math.max(20, Math.min(availableWidth - cardWidth + 20, pos.x));
+                pos.y = Math.max(20, Math.min(availableHeight - cardHeight + 20, pos.y));
+            });
+            
+            // 최종 검증 및 강제 분리
+            for (let i = 0; i < positions.length; i++) {
+                for (let j = i + 1; j < positions.length; j++) {
+                    const pos1 = positions[i];
+                    const pos2 = positions[j];
+                    
+                    const xDiff = Math.abs(pos1.x - pos2.x);
+                    const yDiff = Math.abs(pos1.y - pos2.y);
+                    
+                    if (xDiff < cardWidth + minSpacing && yDiff < cardHeight + minSpacing) {
+                        // 강제 수직 배치
+                        if (pos1.y + cardHeight + minSpacing < availableHeight) {
+                            pos2.y = pos1.y + cardHeight + minSpacing;
+                        } else if (pos2.y - cardHeight - minSpacing > 20) {
+                            pos1.y = pos2.y - cardHeight - minSpacing;
+                        } else {
+                            // 수평 이동
+                            const availableX = availableWidth - cardWidth;
+                            pos2.x = Math.min(availableX, pos1.x + cardWidth + minSpacing);
+                            if (pos2.x > availableX) {
+                                pos1.x = Math.max(20, pos2.x - cardWidth - minSpacing);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return positions;
+        }
+        
+        function createConnections() {
+            document.querySelectorAll('.connection-line').forEach(line => line.remove());
+            
+            if (organizations.length === 0) return;
+            
+            const connections = new Set();
+            
+            organizations.forEach(org => {
+                if (org.이전단체 && org.이전단체.trim()) {
+                    const prevOrgNames = org.이전단체.split(',').map(name => name.trim());
+                    prevOrgNames.forEach(prevName => {
+                        const prevOrg = organizations.find(o => 
+                            o.단체이름 === prevName || 
+                            o.단체이름.includes(prevName) ||
+                            prevName.includes(o.단체이름)
+                        );
+                        if (prevOrg && prevOrg.id !== org.id) {
+                            const connectionKey = `${Math.min(prevOrg.id, org.id)}-${Math.max(prevOrg.id, org.id)}`;
+                            if (!connections.has(connectionKey)) {
+                                connections.add(connectionKey);
+                                drawConnection(prevOrg.id, org.id, 'evolution');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        
+        function drawConnection(fromId, toId, type) {
+            const fromCard = focusCards.get(fromId);
+            const toCard = focusCards.get(toId);
+            
+            if (!fromCard || !toCard) return;
+            
+            const container = document.getElementById('focusContainer');
+            const line = document.createElement('div');
+            line.className = `connection-line ${type}-line`;
+            
+            const fromPos = fromCard.position;
+            const toPos = toCard.position;
+            
+            // 화면 크기에 따른 카드 크기 결정
+            let cardWidth, cardHeight;
+            if (window.innerWidth <= 360) {
+                cardWidth = 85;
+                cardHeight = 55;
+            } else if (window.innerWidth <= 480) {
+                cardWidth = 95;
+                cardHeight = 60;
+            } else if (window.innerWidth <= 768) {
+                cardWidth = 110;
+                cardHeight = 70;
+            } else if (window.innerWidth <= 1024) {
+                cardWidth = 140;
+                cardHeight = 80;
+            } else {
+                cardWidth = 190;
+                cardHeight = 100;
+            }
+            
+            const fromCenterX = fromPos.x + cardWidth / 2;
+            const fromCenterY = fromPos.y + cardHeight / 2;
+            const toCenterX = toPos.x + cardWidth / 2;
+            const toCenterY = toPos.y + cardHeight / 2;
+            
+            const dx = toCenterX - fromCenterX;
+            const dy = toCenterY - fromCenterY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            line.style.width = length + 'px';
+            line.style.left = fromCenterX + 'px';
+            line.style.top = fromCenterY + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 50%';
+            
+            container.appendChild(line);
+        }
+        
+        function highlightConnections(orgId) {
+            // 모든 카드 하이라이트 제거
+            document.querySelectorAll('.focus-card').forEach(card => {
+                card.style.boxShadow = '';
+                card.style.borderColor = '';
+                card.style.transform = '';
+            });
+            
+            // 선택된 카드 하이라이트
+            const targetCard = document.getElementById(`card-${orgId}`);
+            if (targetCard) {
+                targetCard.style.boxShadow = '0 0 25px rgba(212, 175, 55, 0.7)';
+                targetCard.style.borderColor = '#d4af37';
+                targetCard.style.transform = isMobile() ? 'scale(1.02)' : 'scale(1.03)';
+            }
+        }
+        
+        function clearHighlights() {
+            document.querySelectorAll('.focus-card').forEach(card => {
+                if (!card.classList.contains('selected')) {
+                    card.style.boxShadow = '';
+                    card.style.borderColor = '';
+                    card.style.transform = '';
+                }
+            });
+        }
+        
+        function updateLegend() {
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+            
+            if (organizations.length === 0) return;
+            
+            const usedTypes = [...new Set(organizations
+                .map(org => org.계열)
+                .filter(type => type && type.trim())
+                .sort()
+            )];
+            
+            usedTypes.forEach(type => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.background = getTypeColor(type);
+                
+                const label = document.createElement('span');
+                label.textContent = type;
+                
+                legendItem.appendChild(colorBox);
+                legendItem.appendChild(label);
+                legend.appendChild(legendItem);
+            });
+        }
+        
+        // 모달 및 폼 관련 함수들
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const toggleBtn = document.getElementById('editToggle');
+            const mobileToggleBtn = document.getElementById('mobileEditToggle');
+            
+            if (isEditMode) {
+                toggleBtn.textContent = '편집 종료';
+                toggleBtn.classList.add('btn-danger');
+                mobileToggleBtn.textContent = '편집 종료';
+                mobileToggleBtn.classList.add('btn-danger');
+                showStatus('편집 모드가 활성화되었습니다. 카드를 클릭하여 편집할 수 있습니다.', 'info');
+            } else {
+                toggleBtn.textContent = '편집 모드';
+                toggleBtn.classList.remove('btn-danger');
+                mobileToggleBtn.textContent = '편집 모드';
+                mobileToggleBtn.classList.remove('btn-danger');
+                showStatus('편집 모드가 비활성화되었습니다.', 'info');
+            }
+            
+            // 카드 재생성하여 편집 버튼 토글
+            createFocusCards();
+            createConnections();
+        }
+        
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '단체 추가';
+            document.getElementById('saveBtn').textContent = '추가';
+            document.getElementById('orgForm').reset();
+            currentEditingId = null;
+            document.getElementById('orgModal').classList.add('active');
+            
+            // 모바일에서는 바디 스크롤 방지
+            if (isMobile()) {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function openEditModal(orgId) {
+            const org = organizations.find(o => o.id === orgId);
+            if (!org) return;
+            
+            document.getElementById('modalTitle').textContent = '단체 편집';
+            document.getElementById('saveBtn').textContent = '수정';
+            currentEditingId = orgId;
+            
+            // 폼에 기존 데이터 채우기
+            const fields = ['단체이름', '계열', '생성연도', '해체연도', '활동지역', '활동시대', '대표', '이전단체', '이후단체', '연관단체', '연관사건', '설명', '내부'];
+            fields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && org[field]) {
+                    element.value = org[field];
+                }
+            });
+            
+            document.getElementById('orgModal').classList.add('active');
+            
+            // 모바일에서는 바디 스크롤 방지
+            if (isMobile()) {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('orgModal').classList.remove('active');
+            currentEditingId = null;
+            
+            // 바디 스크롤 복원
+            document.body.style.overflow = '';
+        }
+        
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const formData = {};
+            const fields = ['단체이름', '계열', '생성연도', '해체연도', '활동지역', '활동시대', '대표', '이전단체', '이후단체', '연관단체', '연관사건', '설명', '내부'];
+            
+            fields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element) {
+                    let value = element.value.trim();
+                    if (field === '생성연도' || field === '해체연도') {
+                        value = value ? parseInt(value) : null;
+                    }
+                    if (value !== '' && value !== null) {
+                        formData[field] = value;
+                    }
+                }
+            });
+            
+            if (!formData.단체이름) {
+                showStatus('단체명은 필수 입력 항목입니다.', 'error');
+                return;
+            }
+            
+            saveOrganization(formData);
+        }
+        
+        function showDetails(org) {
+            const panel = document.getElementById('detailsPanel');
+            const content = document.getElementById('detailsContent');
+            
+            // 편집 버튼 HTML
+            const editButtonHtml = `
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <button class="btn" onclick="openEditModal(${org.id})" style="font-size: 12px; padding: 6px 12px;">
+                        ✏ 편집
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteOrganization(${org.id})" style="font-size: 12px; padding: 6px 12px; margin-left: 8px;">
+                        ✗ 삭제
+                    </button>
+                </div>
+            `;
+            
+            content.innerHTML = `
+                ${editButtonHtml}
+                <div class="detail-section">
+                    <div class="detail-title">단체명</div>
+                    <div class="detail-content">${org.단체이름 || '정보 없음'}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">활동기간</div>
+                    <div class="detail-content">
+                        ${org.생성연도 || '?'}년${org.해체연도 ? ` ~ ${org.해체연도}년` : ' ~ ?'}
+                        ${org.활동시대 ? `<br>(${org.활동시대})` : ''}
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">계열</div>
+                    <div class="detail-content">${org.계열 || '정보 없음'}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">활동지역</div>
+                    <div class="detail-content">${org.활동지역 || '정보 없음'}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">대표인물</div>
+                    <div class="detail-content">${org.대표 || '정보 없음'}</div>
+                </div>
+                
+                ${org.이전단체 && org.이전단체.trim() ? `
+                <div class="detail-section">
+                    <div class="detail-title">이전단체</div>
+                    <div class="detail-content">${org.이전단체}</div>
+                </div>
+                ` : ''}
+                
+                ${org.이후단체 && org.이후단체.trim() ? `
+                <div class="detail-section">
+                    <div class="detail-title">이후단체</div>
+                    <div class="detail-content">${org.이후단체}</div>
+                </div>
+                ` : ''}
+                
+                ${org.연관단체 && org.연관단체.trim() ? `
+                <div class="detail-section">
+                    <div class="detail-title">연관단체</div>
+                    <div class="detail-content">${org.연관단체}</div>
+                </div>
+                ` : ''}
+                
+                ${org.연관사건 && org.연관사건.trim() ? `
+                <div class="detail-section">
+                    <div class="detail-title">연관사건</div>
+                    <div class="detail-content">${org.연관사건}</div>
+                </div>
+                ` : ''}
+                
+                <div class="detail-section">
+                    <div class="detail-title">설명</div>
+                    <div class="detail-content">${org.설명 || '정보 없음'}</div>
+                </div>
+                
+                ${org.내부 && org.내부.trim() ? `
+                <div class="detail-section">
+                    <div class="detail-title">내부 정보</div>
+                    <div class="detail-content">${org.내부}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            // 기존 선택된 카드 초기화
+            document.querySelectorAll('.focus-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 현재 카드 선택 표시
+            const currentCard = document.getElementById(`card-${org.id}`);
+            if (currentCard) {
+                currentCard.classList.add('selected');
+            }
+            
+            panel.classList.add('open');
+            
+            // 모바일에서는 바디 스크롤 방지
+            if (isMobile()) {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeDetails() {
+            document.getElementById('detailsPanel').classList.remove('open');
+            document.querySelectorAll('.focus-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 바디 스크롤 복원
+            document.body.style.overflow = '';
+        }
+        
+        // 이벤트 리스너 설정
+        document.addEventListener('keydown', (e) => {
+            // ESC 키로 모달 닫기
+            if (e.key === 'Escape') {
+                if (document.getElementById('orgModal').classList.contains('active')) {
+                    closeModal();
+                }
+                if (document.getElementById('detailsPanel').classList.contains('open')) {
+                    closeDetails();
+                }
+                if (isMobileMenuOpen) {
+                    closeMobileMenu();
+                }
+            }
+            
+            // Ctrl+N 또는 Cmd+N으로 새 단체 추가
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                openAddModal();
+            }
+        });
+        
+        // 모달 외부 클릭시 닫기
+        document.getElementById('orgModal').addEventListener('click', (e) => {
+            if (e.target.id === 'orgModal') {
+                closeModal();
+            }
+        });
+        
+        // 터치 이벤트 처리
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchEndTime = Date.now();
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const deltaTime = touchEndTime - touchStartTime;
+            
+            // 스와이프 감지 (빠른 터치 + 충분한 거리)
+            if (deltaTime < 300 && Math.abs(deltaX) > 100 && Math.abs(deltaY) < 50) {
+                const detailsPanel = document.getElementById('detailsPanel');
+                
+                // 오른쪽에서 왼쪽으로 스와이프: 상세 패널 열기
+                if (deltaX < -100 && !detailsPanel.classList.contains('open')) {
+                    // 현재 선택된 카드가 있으면 상세 정보 표시
+                    const selectedCard = document.querySelector('.focus-card.selected');
+                    if (selectedCard) {
+                        const orgId = parseInt(selectedCard.id.replace('card-', ''));
+                        const org = organizations.find(o => o.id === orgId);
+                        if (org) {
+                            showDetails(org);
+                        }
+                    }
+                }
+                
+                // 왼쪽에서 오른쪽으로 스와이프: 상세 패널 닫기
+                if (deltaX > 100 && detailsPanel.classList.contains('open')) {
+                    closeDetails();
+                }
+            }
+        }, { passive: true });
+        
+        // 화면 크기 변경 시 재배치
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (organizations.length > 0) {
+                    createTimeline();
+                    createFocusCards();
+                    createConnections();
+                    updateLegend();
+                }
+            }, 250);
+        });
+        
+        // 화면 방향 변경 감지
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (organizations.length > 0) {
+                    createTimeline();
+                    createFocusCards();
+                    createConnections();
+                    updateLegend();
+                }
+            }, 100);
+        });
+        
+        // 앱 초기화
+        console.log('한국독립운동 중점도 시각화 애플리케이션을 시작합니다...');
+        console.log('- 단축키: ESC (모달 닫기), Ctrl+N (새 단체 추가)');
+        console.log('- 모바일: 스와이프로 상세 패널 제어');
+        
+        // 페이지 로드 완료 후 데이터 로드
+        document.addEventListener('DOMContentLoaded', loadData);
+        
+        // DOM이 이미 로드된 경우를 위한 fallback
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadData);
+        } else {
+            loadData();
+        }
+        
+        // PWA 지원을 위한 서비스 워커 등록 (선택사항)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // 서비스 워커 파일이 있다면 등록
+                // navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
+</body>
+                  </html>
